@@ -390,8 +390,6 @@ class RelationalIdentityStructure:
             self._merge_nodes(node_a, node_b)
 ```
 
-Full implementation with HNSW integration and persistence: [GitHub Link]
-
 ---
 
 ## Future Work
