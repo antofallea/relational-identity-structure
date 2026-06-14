@@ -9,14 +9,14 @@ try:
     HNSW_AVAILABLE = True
 except ImportError:
     HNSW_AVAILABLE = False
-    print("[AVVISO] hnswlib non trovato. La ricerca semantica userà il fallback O(n).")
-    print("          Installa con: pip install hnswlib")
+    print("[WARNING] hnswlib not found. Semantic search will use O(n) fallback.")
+    print("          Install with: pip install hnswlib")
 
 class RelationalIdentityStructure:
     """
     Relational Identity Structure (RIS) Engine v2.1
     
-    Versione corretta: impedisce merge prematuri di nodi con identità debole.
+    Corrected version: prevents premature merging of nodes with weak identity.
     """
     
     def __init__(self, embedding_dim: int = 64, merge_threshold: float = 0.98, max_elements: int = 100000):
@@ -122,8 +122,8 @@ class RelationalIdentityStructure:
         if node_a not in self.nodes or node_b not in self.nodes:
             return
         
-        # CONTROLLO CRUCIALE: impedisce merge di nodi con identità debole
-        # Un nodo con meno di 2 relazioni non ha un'identità abbastanza definita
+        # CRUCIAL CHECK: prevents merging of nodes with weak identity
+        # A node with fewer than 2 relations does not have a well-defined enough identity
         min_relations_for_merge = 2
         if len(self.nodes[node_a]['relations']) < min_relations_for_merge:
             return
@@ -142,7 +142,7 @@ class RelationalIdentityStructure:
             self._merge_nodes(node_a, node_b)
     
     def _merge_nodes(self, node_a: int, node_b: int):
-        print(f"  [⚡ MERGE] Nodi {node_a} e {node_b} fusi (equivalenza strutturale)")
+        print(f"  [⚡ MERGE] Nodes {node_a} and {node_b} merged (structural equivalence)")
         
         relations_to_transfer = [
             (nbr, info) for nbr, info in self.nodes[node_b]['relations'].items() if nbr != node_a
@@ -242,11 +242,11 @@ class RelationalIdentityStructure:
         
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2)
-        print(f"  [💾 SALVATAGGIO] Struttura salvata in: {filepath}")
+        print(f"  [💾 SAVE] Structure saved to: {filepath}")
 
     def load(self, filepath: str):
         if not os.path.exists(filepath):
-            raise FileNotFoundError(f"File non trovato: {filepath}")
+            raise FileNotFoundError(f"File not found: {filepath}")
             
         with open(filepath, 'r', encoding='utf-8') as f:
             data = json.load(f)
@@ -277,73 +277,73 @@ class RelationalIdentityStructure:
                 self.index.add_items(signature.reshape(1, -1), np.array([k]))
                 self._active_in_index.add(k)
                 
-        print(f"  [📂 CARICAMENTO] Struttura caricata da: {filepath}")
+        print(f"  [📂 LOAD] Structure loaded from: {filepath}")
 
 
 def demo_killer_use_case_entity_resolution():
     print("\n" + "="*80)
-    print("🎯 KILLER USE CASE: Entity Resolution (Pulizia Dati Automatica)")
+    print("🎯 KILLER USE CASE: Entity Resolution (Automatic Data Cleaning)")
     print("="*80)
-    print("Scenario: Database clienti sporco con record duplicati.")
-    print("La RIS li identifica e fonde automaticamente basandosi sulle relazioni.\n")
+    print("Scenario: Dirty customer database with duplicate records.")
+    print("RIS identifies and automatically merges them based on relationships.\n")
     
     ris = RelationalIdentityStructure(embedding_dim=64, merge_threshold=0.95)
     
-    # Attributi
+    # Attributes
     email_1 = ris.insert({"type": "email", "value": "mario.rossi@email.com"})
     phone_1 = ris.insert({"type": "phone", "value": "+39 333 1234567"})
-    city_1 = ris.insert({"type": "city", "value": "Milano"})
+    city_1 = ris.insert({"type": "city", "value": "Milan"})
     
     email_2 = ris.insert({"type": "email", "value": "m.rossi88@email.com"})
     phone_2 = ris.insert({"type": "phone", "value": "+39 333 1234567"})
-    city_2 = ris.insert({"type": "city", "value": "Milano"})
+    city_2 = ris.insert({"type": "city", "value": "Milan"})
 
-    # Record cliente
-    cliente_A = ris.insert({"source": "CRM_Legacy", "name": "Mario Rossi"})
-    cliente_B = ris.insert({"source": "Newsletter_Signup", "name": "M. Rossi"})
+    # Customer records
+    customer_A = ris.insert({"source": "CRM_Legacy", "name": "Mario Rossi"})
+    customer_B = ris.insert({"source": "Newsletter_Signup", "name": "M. Rossi"})
 
-    print("Stato iniziale:")
-    print(f"  - Record A: {ris.nodes[cliente_A]['data']['name']} (ID: {cliente_A})")
-    print(f"  - Record B: {ris.nodes[cliente_B]['data']['name']} (ID: {cliente_B})")
+    print("Initial state:")
+    print(f"  - Record A: {ris.nodes[customer_A]['data']['name']} (ID: {customer_A})")
+    print(f"  - Record B: {ris.nodes[customer_B]['data']['name']} (ID: {customer_B})")
     
-    print("\n[FASE 1] Collego Record A ai suoi attributi...")
-    ris.connect(cliente_A, email_1, "has_email", 1.0)
-    ris.connect(cliente_A, phone_1, "has_phone", 1.0)
-    ris.connect(cliente_A, city_1, "lives_in", 1.0)
+    print("\n[PHASE 1] Connecting Record A to its attributes...")
+    ris.connect(customer_A, email_1, "has_email", 1.0)
+    ris.connect(customer_A, phone_1, "has_phone", 1.0)
+    ris.connect(customer_A, city_1, "lives_in", 1.0)
     
-    print("[FASE 2] Collego Record B ai suoi attributi...")
-    print("  (Condivide telefono e città con A, ma ha email diversa)")
-    ris.connect(cliente_B, email_2, "has_email", 1.0)
-    ris.connect(cliente_B, phone_2, "has_phone", 1.0)
-    ris.connect(cliente_B, city_2, "lives_in", 1.0)
+    print("[PHASE 2] Connecting Record B to its attributes...")
+    print("  (Shares phone and city with A, but has a different email)")
+    ris.connect(customer_B, email_2, "has_email", 1.0)
+    ris.connect(customer_B, phone_2, "has_phone", 1.0)
+    ris.connect(customer_B, city_2, "lives_in", 1.0)
     
-    print("\n[FASE 3] Analisi identità continua:")
-    identity_A = ris.who_am_i(cliente_A, top_k=2)
+    print("\n[PHASE 3] Continuous identity analysis:")
+    identity_A = ris.who_am_i(customer_A, top_k=2)
     for node_id, sim in identity_A:
-        name = ris.nodes[node_id]['data'].get('name', 'Attributo')
-        print(f"  Record A è {sim*100:.1f}% simile a: {name} (ID {node_id})")
+        name = ris.nodes[node_id]['data'].get('name', 'Attribute')
+        print(f"  Record A is {sim*100:.1f}% similar to: {name} (ID {node_id})")
     
-    print("\n[FASE 4] Aggiornamento: L'utente B conferma l'email principale.")
-    print("  Rimuovo l'email vecchia e collego B all'email di A...")
-    ris.disconnect(cliente_B, email_2)
-    ris.connect(cliente_B, email_1, "has_email", 1.0)
+    print("\n[PHASE 4] Update: User B confirms the main email.")
+    print("  Removing the old email and connecting B to A's email...")
+    ris.disconnect(customer_B, email_2)
+    ris.connect(customer_B, email_1, "has_email", 1.0)
     
-    print("\n[RISULTATO FINALE]")
-    print("A e B ora condividono ESATTAMENTE gli stessi attributi (Email, Telefono, Città).")
-    print("Le loro firme relazionali sono identiche → fusione automatica!")
+    print("\n[FINAL RESULT]")
+    print("A and B now share EXACTLY the same attributes (Email, Phone, City).")
+    print("Their relational signatures are identical → automatic merging!")
     
-    stato_B = ris._resolve_alias(cliente_B)
-    stato_A = ris._resolve_alias(cliente_A)
-    print(f"  Record B (ID {cliente_B}) è ora alias del Record A (ID {stato_A}).")
-    print(f"  Dati unificati: {ris.nodes[stato_A]['data']}")
+    state_B = ris._resolve_alias(customer_B)
+    state_A = ris._resolve_alias(customer_A)
+    print(f"  Record B (ID {customer_B}) is now an alias of Record A (ID {state_A}).")
+    print(f"  Unified data: {ris.nodes[state_A]['data']}")
     
     filepath = "ris_database.json"
     ris.save(filepath)
     
-    print("\n[FASE 5] Test persistenza...")
+    print("\n[PHASE 5] Persistence test...")
     ris_new = RelationalIdentityStructure()
     ris_new.load(filepath)
-    print(f"  Verifica: Il nodo {stato_A} ha {len(ris_new.nodes[stato_A]['relations'])} relazioni dopo il ricaricamento.")
+    print(f"  Check: Node {state_A} has {len(ris_new.nodes[state_A]['relations'])} relations after reloading.")
     
     if os.path.exists(filepath):
         os.remove(filepath)
@@ -351,5 +351,5 @@ def demo_killer_use_case_entity_resolution():
 if __name__ == "__main__":
     demo_killer_use_case_entity_resolution()
     print("\n" + "="*80)
-    print("✅ MOTORE RIS v2.1 - MERGE INTELLIGENTE ATTIVATO")
+    print("✅ RIS ENGINE v2.1 - SMART MERGE ACTIVATED")
     print("="*80)
