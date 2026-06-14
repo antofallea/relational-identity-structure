@@ -1,13 +1,3 @@
-Perfetto. Scelgo l'**articolo tecnico** perché ha il massimo impatto: ti dà visibilità immediata, può generare interesse dalla community, e può essere pubblicato oggi stesso. Inoltre, l'articolo può includere un link al codice open-source, quindi copriamo anche quell'aspetto.
-
-Ti preparo tutto: l'articolo completo in inglese, pronto per Medium/Dev.to, e il README.md per GitHub.
-
----
-
-## 📄 ARTICOLO TECNICO (pronto per Medium/Dev.to)
-
-**File: `article.md`**
-
 ```markdown
 # Beyond IDs: How Emergent Identity Solves Entity Resolution Without Rules
 
