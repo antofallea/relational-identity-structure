@@ -153,227 +153,190 @@ This is **automatic deduplication** without rules.
 
 ---
 
-# The Mathematics Behind RIS
+1. Definition of the Graph
 
-The previous examples describe the intuition. This section formalizes the Relational Identity Structure.
+Let:
 
-## Graph Model
-
-Let
-
-\[
 G=(V,E)
-\]
 
-be a labeled weighted graph where
+be a labeled weighted directed graph, where:
 
-- \(V\) is the set of nodes;
-- \(E \subseteq V \times V \times T \times \mathbb{R}\) is the set of weighted typed edges.
+V is the set of nodes
+E⊆V×V×T×R is the set of edges
 
-Each edge is represented as
+Each edge is defined as:
 
-\[
 e=(u,v,t,w)
-\]
 
-where
+where:
 
-- \(u,v\in V\)
-- \(t\) is the relation type
-- \(w\) is the relation weight.
+u,v∈V
+t∈T is the relation type
+w∈R is the relation weight
+2. Core Principle of RIS
 
-Unlike traditional databases, nodes do not possess intrinsic semantic identities.
+Unlike traditional systems:
 
-Identity is entirely determined by the graph topology.
+Identity is not intrinsic to nodes.
 
----
+Instead:
 
-## Relational Identity
+Nodes have no inherent semantic identity
+Identity emerges entirely from relationships
 
-For every node
+Thus:
 
-\[
-v\in V
-\]
+Relationships→Identity
 
-define its relational neighborhood
+instead of:
 
-\[
-R(v)=
-\{
-(u,t,w)\mid(v,u,t,w)\in E
-\}
-\]
+Identifier→Relationships
+3. Relational Neighborhood
 
-RIS defines identity as a function of this neighborhood
+For each node v∈V, define its relational neighborhood:
 
-\[
+R(v)={(u,t,w)∣(v,u,t,w)∈E}
+
+This represents all outgoing relational structure of node v.
+
+4. Identity Function
+
+RIS defines identity as a function of relational structure:
+
 I(v)=f(R(v))
-\]
 
-where
+where:
 
-- \(f\) computes a relational embedding.
+f is an embedding function
+I(v)∈R
+d
 
-This is the fundamental inversion of traditional systems.
+Thus, identity is a vector representation of relations, not a stored attribute.
 
-Traditional databases follow
+5. Relational Embedding
 
-\[
-Identifier
-\longrightarrow
-Relationships
-\]
+A generic formulation of the identity embedding is:
 
-RIS instead follows
+I(v)=Normalize
+	​
 
-\[
-Relationships
-\longrightarrow
-Identity
-\]
+(u,t,w)∈R(v)
+∑
+	​
 
-Identity is therefore not stored.
+w⋅ϕ(t,u)
+	​
 
-It is computed.
 
----
+where:
 
-## Relational Signature
+d is embedding dimension
+ϕ(t,u) maps relation-type and node into a vector space
+5.1 Simple Deterministic Implementation
 
-Each node is represented by an embedding vector
+A minimal implementation can use hashing:
 
-\[
-I(v)\in\mathbb{R}^{d}
-\]
+ϕ(t,u)=H(t)⊕H(u)
 
-computed as
+where:
 
-\[
-I(v)
-=
-Normalize
-\left(
-\sum_{(u,t,w)\in R(v)}
-w\,\phi(t,u)
-\right)
-\]
+H is a deterministic hash function
+⊕ is vector combination (e.g. XOR or concatenation)
+6. Identity Similarity
 
-where
+To compare identities:
 
-- \(d\) is the embedding dimension;
-- \(\phi\) maps every relation into a deterministic vector representation.
-
-A simple implementation uses hash-based embeddings
-
-\[
-\phi(t,u)=H(t)\oplus H(u)
-\]
-
-where
-
-- \(H\) is a deterministic hashing function;
-- \(\oplus\) denotes vector composition.
-
-More sophisticated implementations may replace this with learned graph embeddings.
-
----
-
-## Identity Similarity
-
-Two identities are compared through cosine similarity
-
-\[
 S(a,b)=
-\frac
-{I(a)\cdot I(b)}
-{\|I(a)\|\|I(b)\|}
-\]
+∥I(a)∥∥I(b)∥
+I(a)⋅I(b)
+	​
 
-where
 
-\[
-0\le S(a,b)\le1
-\]
+where:
 
-A value close to one indicates nearly identical relational identities.
+0≤S(a,b)≤1
 
-Unlike traditional entity resolution, identity is therefore continuous rather than binary.
+Interpretation:
 
----
+S≈1: nearly identical relational identity
+S≈0: unrelated nodes
+7. Merge Criterion
 
-## Merge Criterion
+Nodes are considered equivalent if:
 
-Nodes become aliases whenever
+S(a,b)≥θ
 
-\[
-S(a,b)\ge\theta
-\]
+where:
 
-where
+0<θ<1
 
-\[
-0<\theta<1
-\]
+Formally:
 
-is a configurable merge threshold.
+Merge(a,b)⟺S(a,b)≥θ
+8. Merge Operation
 
-Formally,
+When merging nodes:
 
-\[
-Merge(a,b)
-\iff
-S(a,b)\ge\theta
-\]
+R(a)←R(a)∪R(b)
 
-After merging,
+and:
 
-\[
-R(a)
-=
-R(a)\cup R(b)
-\]
+b→Alias(a)
 
-and
+This ensures:
 
-\[
-b
-\rightarrow
-Alias(a)
-\]
+structural preservation
+backward compatibility via aliasing
+9. Dynamic Identity
 
-preserving external references through alias resolution.
+If the graph evolves:
 
----
+E→E+ΔE
 
-## Dynamic Identity
+then identity updates accordingly:
 
-Whenever the graph changes
+I
+′
+(v)=f(R
+′
+(v))
 
-\[
-E'
-=
-E+\Delta E
-\]
+Thus identity is:
 
-the relational identity becomes
-
-\[
-I'(v)
-=
-f(R'(v))
-\]
-
-Identity is therefore a dynamic property
-
-\[
 I(v,t)
-\]
 
-rather than a permanent label.
+a time-dependent function, not a static label.
 
-This makes RIS naturally suitable for evolving systems, recommendation engines, fraud detection and continuously changing knowledge graphs.
+10. Properties of RIS
 
+RIS exhibits the following properties:
+
+10.1 Non-intrinsic identity
+
+Nodes have no identity outside relationships.
+
+10.2 Continuous identity space
+
+Identity is vector-based, not discrete.
+
+10.3 Mergeability
+
+Entities can converge dynamically via similarity.
+
+10.4 Temporal evolution
+
+Identity changes with graph updates.
+
+11. Applications
+
+RIS is suitable for:
+
+dynamic knowledge graphs
+recommendation systems
+fraud detection systems
+entity resolution
+evolving relational databases
+adaptive AI memory systems
 ---
 ---
 
