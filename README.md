@@ -153,6 +153,230 @@ This is **automatic deduplication** without rules.
 
 ---
 
+# The Mathematics Behind RIS
+
+The previous examples describe the intuition. This section formalizes the Relational Identity Structure.
+
+## Graph Model
+
+Let
+
+\[
+G=(V,E)
+\]
+
+be a labeled weighted graph where
+
+- \(V\) is the set of nodes;
+- \(E \subseteq V \times V \times T \times \mathbb{R}\) is the set of weighted typed edges.
+
+Each edge is represented as
+
+\[
+e=(u,v,t,w)
+\]
+
+where
+
+- \(u,v\in V\)
+- \(t\) is the relation type
+- \(w\) is the relation weight.
+
+Unlike traditional databases, nodes do not possess intrinsic semantic identities.
+
+Identity is entirely determined by the graph topology.
+
+---
+
+## Relational Identity
+
+For every node
+
+\[
+v\in V
+\]
+
+define its relational neighborhood
+
+\[
+R(v)=
+\{
+(u,t,w)\mid(v,u,t,w)\in E
+\}
+\]
+
+RIS defines identity as a function of this neighborhood
+
+\[
+I(v)=f(R(v))
+\]
+
+where
+
+- \(f\) computes a relational embedding.
+
+This is the fundamental inversion of traditional systems.
+
+Traditional databases follow
+
+\[
+Identifier
+\longrightarrow
+Relationships
+\]
+
+RIS instead follows
+
+\[
+Relationships
+\longrightarrow
+Identity
+\]
+
+Identity is therefore not stored.
+
+It is computed.
+
+---
+
+## Relational Signature
+
+Each node is represented by an embedding vector
+
+\[
+I(v)\in\mathbb{R}^{d}
+\]
+
+computed as
+
+\[
+I(v)
+=
+Normalize
+\left(
+\sum_{(u,t,w)\in R(v)}
+w\,\phi(t,u)
+\right)
+\]
+
+where
+
+- \(d\) is the embedding dimension;
+- \(\phi\) maps every relation into a deterministic vector representation.
+
+A simple implementation uses hash-based embeddings
+
+\[
+\phi(t,u)=H(t)\oplus H(u)
+\]
+
+where
+
+- \(H\) is a deterministic hashing function;
+- \(\oplus\) denotes vector composition.
+
+More sophisticated implementations may replace this with learned graph embeddings.
+
+---
+
+## Identity Similarity
+
+Two identities are compared through cosine similarity
+
+\[
+S(a,b)=
+\frac
+{I(a)\cdot I(b)}
+{\|I(a)\|\|I(b)\|}
+\]
+
+where
+
+\[
+0\le S(a,b)\le1
+\]
+
+A value close to one indicates nearly identical relational identities.
+
+Unlike traditional entity resolution, identity is therefore continuous rather than binary.
+
+---
+
+## Merge Criterion
+
+Nodes become aliases whenever
+
+\[
+S(a,b)\ge\theta
+\]
+
+where
+
+\[
+0<\theta<1
+\]
+
+is a configurable merge threshold.
+
+Formally,
+
+\[
+Merge(a,b)
+\iff
+S(a,b)\ge\theta
+\]
+
+After merging,
+
+\[
+R(a)
+=
+R(a)\cup R(b)
+\]
+
+and
+
+\[
+b
+\rightarrow
+Alias(a)
+\]
+
+preserving external references through alias resolution.
+
+---
+
+## Dynamic Identity
+
+Whenever the graph changes
+
+\[
+E'
+=
+E+\Delta E
+\]
+
+the relational identity becomes
+
+\[
+I'(v)
+=
+f(R'(v))
+\]
+
+Identity is therefore a dynamic property
+
+\[
+I(v,t)
+\]
+
+rather than a permanent label.
+
+This makes RIS naturally suitable for evolving systems, recommendation engines, fraud detection and continuously changing knowledge graphs.
+
+---
+---
+
 ## Real-World Example: Customer Deduplication
 
 Let's solve the Entity Resolution problem with RIS.
@@ -236,7 +460,7 @@ Customer B (ID 7) is now an alias of Customer A (ID 6).
 Unified data: {'source': 'CRM', 'name': 'Mario Rossi'}
 ```
 
-No rules. No machine learning. Just **structural equivalence**.
+No handcrafted entity-resolution rules. No supervised training. Identity emerges from structural similarity.
 
 ---
 
