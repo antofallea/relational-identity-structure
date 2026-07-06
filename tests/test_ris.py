@@ -78,6 +78,9 @@ class TestRIS:
         assert ris._resolve_alias(y) == x
         assert x in ris.nodes
         assert y not in ris.nodes
+        
+        
+        
 
     def test_save_and_load(self):
         ris = RelationalIdentityStructure(verbose=False)
