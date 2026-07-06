@@ -1,10 +1,5 @@
-Perfetto. Scelgo l'**articolo tecnico** perché ha il massimo impatto: ti dà visibilità immediata, può generare interesse dalla community, e può essere pubblicato oggi stesso. Inoltre, l'articolo può includere un link al codice open-source, quindi copriamo anche quell'aspetto.
-
-Ti preparo tutto: l'articolo completo in inglese, pronto per Medium/Dev.to, e il README.md per GitHub.
-
 ---
 
-## 📄 ARTICOLO TECNICO (pronto per Medium/Dev.to)
 
 **File: `article.md`**
 
@@ -152,191 +147,249 @@ def check_merge(node_a, node_b):
 This is **automatic deduplication** without rules.
 
 ---
+---
 
-1. Definition of the Graph
+# The Mathematics Behind RIS
 
-Let:
+The previous examples describe the intuition. This section formalizes the Relational Identity Structure without relying on implementation details.
 
-G=(V,E)
+## Graph Model
 
-be a labeled weighted directed graph, where:
+RIS represents data as a weighted labeled graph.
 
-V is the set of nodes
-E⊆V×V×T×R is the set of edges
+```
+G = (V, E)
+```
 
-Each edge is defined as:
+Where:
 
-e=(u,v,t,w)
+- `V` is the set of nodes.
+- `E` is the set of relationships.
 
-where:
+Each relationship is represented as:
 
-u,v∈V
-t∈T is the relation type
-w∈R is the relation weight
-2. Core Principle of RIS
-
-Unlike traditional systems:
-
-Identity is not intrinsic to nodes.
-
-Instead:
-
-Nodes have no inherent semantic identity
-Identity emerges entirely from relationships
-
-Thus:
-
-Relationships→Identity
-
-instead of:
-
-Identifier→Relationships
-3. Relational Neighborhood
-
-For each node v∈V, define its relational neighborhood:
-
-R(v)={(u,t,w)∣(v,u,t,w)∈E}
-
-This represents all outgoing relational structure of node v.
-
-4. Identity Function
-
-RIS defines identity as a function of relational structure:
-
-I(v)=f(R(v))
+```
+(u, v, relation_type, weight)
+```
 
 where:
 
-f is an embedding function
-I(v)∈R
-d
+- `u` and `v` are nodes
+- `relation_type` describes the connection
+- `weight` represents its importance
 
-Thus, identity is a vector representation of relations, not a stored attribute.
+Unlike traditional databases, nodes do **not** have intrinsic identities.
 
-5. Relational Embedding
+Their identity is determined entirely by their relationships.
 
-A generic formulation of the identity embedding is:
+---
 
-I(v)=Normalize
-	​
+## Relational Identity
 
-(u,t,w)∈R(v)
-∑
-	​
+For every node `v`, define its relational neighborhood as all connected relationships.
 
-w⋅ϕ(t,u)
-	​
+Identity is then defined as
 
+```
+Identity(v) = f(Relationships(v))
+```
 
-where:
+where `f` is the function that computes the relational signature.
 
-d is embedding dimension
-ϕ(t,u) maps relation-type and node into a vector space
-5.1 Simple Deterministic Implementation
+Traditional systems work like this:
 
-A minimal implementation can use hashing:
+```
+Identifier
+      ↓
+Relationships
+```
 
-ϕ(t,u)=H(t)⊕H(u)
+RIS reverses the dependency:
 
-where:
+```
+Relationships
+      ↓
+Identity
+```
 
-H is a deterministic hash function
-⊕ is vector combination (e.g. XOR or concatenation)
-6. Identity Similarity
+Identity is therefore **computed**, not stored.
 
-To compare identities:
+---
 
-S(a,b)=
-∥I(a)∥∥I(b)∥
-I(a)⋅I(b)
-	​
+## Relational Signature
 
+Each node owns a signature vector.
 
-where:
+The signature is computed from all of its relationships.
 
-0≤S(a,b)≤1
+Conceptually:
 
-Interpretation:
+```
+signature =
+Normalize(
+    Σ(weight × relation_embedding)
+)
+```
 
-S≈1: nearly identical relational identity
-S≈0: unrelated nodes
-7. Merge Criterion
+A simple implementation is
 
-Nodes are considered equivalent if:
+```
+relation_embedding =
+Hash(relation_type) + Hash(neighbor)
+```
 
-S(a,b)≥θ
+The final vector becomes a fingerprint of the node's relational context.
 
-where:
+Different embedding techniques (GraphSAGE, Node2Vec, GNNs, etc.) can replace this computation without changing the RIS model.
 
-0<θ<1
+---
 
-Formally:
+## Identity Similarity
 
-Merge(a,b)⟺S(a,b)≥θ
-8. Merge Operation
+Two identities are compared using cosine similarity.
 
-When merging nodes:
+```
+Similarity(A, B) =
+dot(signatureA, signatureB)
+-----------------------------------
+||signatureA|| × ||signatureB||
+```
 
-R(a)←R(a)∪R(b)
+Similarity ranges between:
 
-and:
+```
+0.0  -> completely different
 
-b→Alias(a)
+1.0  -> structurally identical
+```
 
-This ensures:
+Typical interpretation:
 
-structural preservation
-backward compatibility via aliasing
-9. Dynamic Identity
+| Similarity | Meaning |
+|------------|---------------------------|
+| 1.00 | Identical relational identity |
+| 0.95 | Extremely similar |
+| 0.80 | Related |
+| < 0.70 | Different entities |
 
-If the graph evolves:
+RIS therefore treats identity as a **continuous value**, not a binary property.
 
-E→E+ΔE
+---
 
-then identity updates accordingly:
+## Merge Criterion
 
-I
-′
-(v)=f(R
-′
-(v))
+Two nodes are merged whenever
 
-Thus identity is:
+```
+Similarity(A, B) >= Threshold
+```
 
-I(v,t)
+For example
 
-a time-dependent function, not a static label.
+```
+Threshold = 0.95
+```
 
-10. Properties of RIS
+After merging:
 
-RIS exhibits the following properties:
+```
+Relationships(A)
 
-10.1 Non-intrinsic identity
+=
 
-Nodes have no identity outside relationships.
+Relationships(A)
++
+Relationships(B)
+```
 
-10.2 Continuous identity space
+Node B becomes an alias of Node A.
 
-Identity is vector-based, not discrete.
+External references remain valid through the alias table.
 
-10.3 Mergeability
+---
 
-Entities can converge dynamically via similarity.
+## Dynamic Identity
 
-10.4 Temporal evolution
+Whenever a relationship changes,
 
-Identity changes with graph updates.
+```
+Graph(t)
 
-11. Applications
+↓
 
-RIS is suitable for:
+Graph(t + 1)
+```
 
-dynamic knowledge graphs
-recommendation systems
-fraud detection systems
-entity resolution
-evolving relational databases
-adaptive AI memory systems
+the identity is recomputed.
+
+```
+Identity(t)
+
+↓
+
+Identity(t + 1)
+```
+
+Identity is therefore dynamic.
+
+It evolves as the graph evolves.
+
+---
+
+## Computational Complexity
+
+Let
+
+```
+n = number of nodes
+
+m = number of relationships
+
+d = average node degree
+```
+
+| Operation | Complexity |
+|-----------|------------|
+| Insert node | O(1) |
+| Add relationship | O(d) |
+| Update signature | O(d) |
+| Merge | O(d₁ + d₂) |
+| Identity search | O(n) |
+| Identity search with HNSW | O(log n) |
+
+Space complexity:
+
+```
+O(n + m + n × embedding_dimension)
+```
+
+which is linear with respect to the graph size.
+
+---
+
+## Why This Matters
+
+RIS changes the direction of identity computation.
+
+Traditional systems assume:
+
+```
+Identifier
+      ↓
+Relationships
+```
+
+RIS assumes:
+
+```
+Relationships
+      ↓
+Identity
+```
+
+The identifier is no longer the source of truth.
+
+The relational structure is.
 ---
 ---
 
