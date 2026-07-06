@@ -366,6 +366,16 @@ O(n + m + n × embedding_dimension)
 which is linear with respect to the graph size.
 
 ---
+Why Existing Graph Embeddings Are Not Enough
+
+con una tabella.
+
+Method	           Computes Similarity	Dynamic Identity	Automatic Merge	Identity Derived
+Hash IDs   		   ❌	    ❌	        ❌	                ❌
+Node2Vec           ✅	    ❌	        ❌	                ❌
+GraphSAGE	       ✅	    Partial	    ❌	                ❌
+Neo4j Similarity   ✅	    ❌	        ❌	                ❌
+RIS	               ✅	    ✅	        ✅	                ✅
 
 ## Why This Matters
 
@@ -484,7 +494,7 @@ No handcrafted entity-resolution rules. No supervised training. Identity emerges
 
 ### 1. No Rules Required
 
-Traditional Entity Resolution requires hundreds of rules. RIS requires **zero rules**. The merging logic is emergent from the topology.
+Traditional Entity Resolution requires hundreds of rules. RIS minimizes handcrafted entity-resolution rules by replacing them with structural similarity.. The merging logic is emergent from the topology.
 
 ### 2. Continuous Identity
 
