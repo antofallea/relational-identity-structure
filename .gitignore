@@ -28,4 +28,4 @@ dist/
 *.egg-info/
 
 #Data
-.json
+.json/
