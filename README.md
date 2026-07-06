@@ -366,17 +366,19 @@ O(n + m + n × embedding_dimension)
 which is linear with respect to the graph size.
 
 ---
-Why Existing Graph Embeddings Are Not Enough
+## Why Existing Graph Embeddings Are Not Enough
 
-con una tabella.
+Although RIS uses graph embeddings internally, it is fundamentally different from existing graph embedding methods. Traditional approaches compute similarity between nodes, while RIS makes identity itself an emergent property of the graph.
 
-Method	           Computes Similarity	Dynamic Identity	Automatic Merge	Identity Derived
-Hash IDs   		   ❌	    ❌	        ❌	                ❌
-Node2Vec           ✅	    ❌	        ❌	                ❌
-GraphSAGE	       ✅	    Partial	    ❌	                ❌
-Neo4j Similarity   ✅	    ❌	        ❌	                ❌
-RIS	               ✅	    ✅	        ✅	                ✅
+| Method | Computes Similarity | Dynamic Identity | Automatic Merge | Identity Derived |
+|--------|:-------------------:|:----------------:|:---------------:|:----------------:|
+| Hash IDs | ❌ | ❌ | ❌ | ❌ |
+| Node2Vec | ✅ | ❌ | ❌ | ❌ |
+| GraphSAGE | ✅ | Partial | ❌ | ❌ |
+| Neo4j Similarity | ✅ | ❌ | ❌ | ❌ |
+| **RIS** | ✅ | ✅ | ✅ | ✅ |
 
+The key distinction is that existing graph embedding methods stop after computing vector representations. RIS introduces a higher-level abstraction where those representations become the basis of identity itself. Identity is no longer assigned externally but continuously recomputed from the evolving relational structure.
 ## Why This Matters
 
 RIS changes the direction of identity computation.
