@@ -1,0 +1,574 @@
+{
+  "baseline_threshold_grid": [
+    0.05,
+    0.1,
+    0.15,
+    0.2,
+    0.25,
+    0.3,
+    0.35,
+    0.4,
+    0.45,
+    0.5,
+    0.55,
+    0.6,
+    0.65,
+    0.7,
+    0.75,
+    0.8,
+    0.85,
+    0.9,
+    0.95
+  ],
+  "calibration_clusters": 70,
+  "calibration_records": 497,
+  "dataset": "Leipzig Affiliations",
+  "elapsed_seconds": 273.269717,
+  "gold_clusters": 330,
+  "idf_scope": "complete raw unlabeled corpus before split and stream",
+  "input_sha256": "5939821aff9c7949b8b2d49676af216287057db057dec8e308ff21f87c6e8231",
+  "methods": {
+    "Greedy Jaccard profile": {
+      "lexical": {
+        "f1": 0.262847,
+        "fn": 9285,
+        "fp": 9292,
+        "merge_attempts": 1762,
+        "merges": 1569,
+        "precision": 0.262774,
+        "predicted_clusters": 194,
+        "predicted_pairs": 12604,
+        "recall": 0.26292,
+        "tp": 3312
+      },
+      "random_orders": [
+        {
+          "f1": 0.260334,
+          "fn": 9552,
+          "fp": 7751,
+          "merge_attempts": 1762,
+          "merges": 1555,
+          "precision": 0.282049,
+          "predicted_clusters": 208,
+          "predicted_pairs": 10796,
+          "recall": 0.241724,
+          "seed": 0,
+          "tp": 3045
+        },
+        {
+          "f1": 0.2512,
+          "fn": 9745,
+          "fp": 7258,
+          "merge_attempts": 1762,
+          "merges": 1546,
+          "precision": 0.282097,
+          "predicted_clusters": 217,
+          "predicted_pairs": 10110,
+          "recall": 0.226403,
+          "seed": 1,
+          "tp": 2852
+        },
+        {
+          "f1": 0.238483,
+          "fn": 9874,
+          "fp": 7516,
+          "merge_attempts": 1762,
+          "merges": 1546,
+          "precision": 0.265944,
+          "predicted_clusters": 217,
+          "predicted_pairs": 10239,
+          "recall": 0.216163,
+          "seed": 2,
+          "tp": 2723
+        },
+        {
+          "f1": 0.249659,
+          "fn": 9758,
+          "fp": 7307,
+          "merge_attempts": 1762,
+          "merges": 1548,
+          "precision": 0.279815,
+          "predicted_clusters": 215,
+          "predicted_pairs": 10146,
+          "recall": 0.225371,
+          "seed": 3,
+          "tp": 2839
+        }
+      ],
+      "random_summary": {
+        "f1": 0.249919,
+        "f1_max": 0.260334,
+        "f1_min": 0.238483,
+        "f1_std": 0.007762,
+        "precision": 0.277476,
+        "recall": 0.227415
+      },
+      "validation": {
+        "f1": 0.545753,
+        "fn": 2203,
+        "fp": 1118,
+        "merge_attempts": 496,
+        "merges": 431,
+        "precision": 0.640861,
+        "predicted_clusters": 66,
+        "predicted_pairs": 3113,
+        "recall": 0.475226,
+        "threshold": 0.15,
+        "tp": 1995
+      }
+    },
+    "Greedy weighted-cosine profile": {
+      "lexical": {
+        "f1": 0.46788,
+        "fn": 6814,
+        "fp": 6340,
+        "merge_attempts": 1762,
+        "merges": 1516,
+        "precision": 0.477027,
+        "predicted_clusters": 247,
+        "predicted_pairs": 12123,
+        "recall": 0.459078,
+        "tp": 5783
+      },
+      "random_orders": [
+        {
+          "f1": 0.435682,
+          "fn": 7498,
+          "fp": 5711,
+          "merge_attempts": 1762,
+          "merges": 1505,
+          "precision": 0.471693,
+          "predicted_clusters": 258,
+          "predicted_pairs": 10810,
+          "recall": 0.404779,
+          "seed": 0,
+          "tp": 5099
+        },
+        {
+          "f1": 0.428602,
+          "fn": 7664,
+          "fp": 5489,
+          "merge_attempts": 1762,
+          "merges": 1504,
+          "precision": 0.473326,
+          "predicted_clusters": 259,
+          "predicted_pairs": 10422,
+          "recall": 0.391601,
+          "seed": 1,
+          "tp": 4933
+        },
+        {
+          "f1": 0.457909,
+          "fn": 7250,
+          "fp": 5410,
+          "merge_attempts": 1762,
+          "merges": 1507,
+          "precision": 0.497072,
+          "predicted_clusters": 256,
+          "predicted_pairs": 10757,
+          "recall": 0.424466,
+          "seed": 2,
+          "tp": 5347
+        },
+        {
+          "f1": 0.447825,
+          "fn": 7430,
+          "fp": 5312,
+          "merge_attempts": 1762,
+          "merges": 1500,
+          "precision": 0.493081,
+          "predicted_clusters": 263,
+          "predicted_pairs": 10479,
+          "recall": 0.410177,
+          "seed": 3,
+          "tp": 5167
+        }
+      ],
+      "random_summary": {
+        "f1": 0.442504,
+        "f1_max": 0.457909,
+        "f1_min": 0.428602,
+        "f1_std": 0.011241,
+        "precision": 0.483793,
+        "recall": 0.407756
+      },
+      "validation": {
+        "f1": 0.709076,
+        "fn": 1651,
+        "fp": 439,
+        "merge_attempts": 496,
+        "merges": 416,
+        "precision": 0.852981,
+        "predicted_clusters": 81,
+        "predicted_pairs": 2986,
+        "recall": 0.606717,
+        "threshold": 0.25,
+        "tp": 2547
+      }
+    },
+    "Jaccard connected components": {
+      "lexical": {
+        "f1": 0.067822,
+        "fn": 4846,
+        "fp": 208222,
+        "merge_attempts": 1762,
+        "merges": 5597,
+        "precision": 0.035889,
+        "predicted_clusters": 537,
+        "predicted_pairs": 215973,
+        "recall": 0.615305,
+        "tp": 7751
+      },
+      "random_orders": [
+        {
+          "f1": 0.067822,
+          "fn": 4846,
+          "fp": 208222,
+          "merge_attempts": 1762,
+          "merges": 5597,
+          "precision": 0.035889,
+          "predicted_clusters": 537,
+          "predicted_pairs": 215973,
+          "recall": 0.615305,
+          "seed": 0,
+          "tp": 7751
+        },
+        {
+          "f1": 0.067822,
+          "fn": 4846,
+          "fp": 208222,
+          "merge_attempts": 1762,
+          "merges": 5597,
+          "precision": 0.035889,
+          "predicted_clusters": 537,
+          "predicted_pairs": 215973,
+          "recall": 0.615305,
+          "seed": 1,
+          "tp": 7751
+        },
+        {
+          "f1": 0.067822,
+          "fn": 4846,
+          "fp": 208222,
+          "merge_attempts": 1762,
+          "merges": 5597,
+          "precision": 0.035889,
+          "predicted_clusters": 537,
+          "predicted_pairs": 215973,
+          "recall": 0.615305,
+          "seed": 2,
+          "tp": 7751
+        },
+        {
+          "f1": 0.067822,
+          "fn": 4846,
+          "fp": 208222,
+          "merge_attempts": 1762,
+          "merges": 5597,
+          "precision": 0.035889,
+          "predicted_clusters": 537,
+          "predicted_pairs": 215973,
+          "recall": 0.615305,
+          "seed": 3,
+          "tp": 7751
+        }
+      ],
+      "random_summary": {
+        "f1": 0.067822,
+        "f1_max": 0.067822,
+        "f1_min": 0.067822,
+        "f1_std": 0.0,
+        "precision": 0.035889,
+        "recall": 0.615305
+      },
+      "validation": {
+        "f1": 0.745649,
+        "fn": 1542,
+        "fp": 270,
+        "merge_attempts": 496,
+        "merges": 1192,
+        "precision": 0.907724,
+        "predicted_clusters": 177,
+        "predicted_pairs": 2926,
+        "recall": 0.632682,
+        "threshold": 0.55,
+        "tp": 2656
+      }
+    },
+    "RIS weighted signature": {
+      "lexical": {
+        "f1": 0.567479,
+        "fn": 5188,
+        "fp": 6106,
+        "merge_attempts": 1762,
+        "merges": 1425,
+        "precision": 0.548206,
+        "predicted_clusters": 338,
+        "predicted_pairs": 13515,
+        "recall": 0.588156,
+        "tp": 7409
+      },
+      "random_orders": [
+        {
+          "f1": 0.552114,
+          "fn": 5414,
+          "fp": 6240,
+          "merge_attempts": 1762,
+          "merges": 1435,
+          "precision": 0.535126,
+          "predicted_clusters": 328,
+          "predicted_pairs": 13423,
+          "recall": 0.570215,
+          "seed": 0,
+          "tp": 7183
+        },
+        {
+          "f1": 0.589243,
+          "fn": 5509,
+          "fp": 4373,
+          "merge_attempts": 1762,
+          "merges": 1423,
+          "precision": 0.618445,
+          "predicted_clusters": 340,
+          "predicted_pairs": 11461,
+          "recall": 0.562674,
+          "seed": 1,
+          "tp": 7088
+        },
+        {
+          "f1": 0.577694,
+          "fn": 5128,
+          "fp": 5792,
+          "merge_attempts": 1762,
+          "merges": 1417,
+          "precision": 0.563231,
+          "predicted_clusters": 346,
+          "predicted_pairs": 13261,
+          "recall": 0.592919,
+          "seed": 2,
+          "tp": 7469
+        },
+        {
+          "f1": 0.583769,
+          "fn": 4778,
+          "fp": 6372,
+          "merge_attempts": 1762,
+          "merges": 1417,
+          "precision": 0.550983,
+          "predicted_clusters": 346,
+          "predicted_pairs": 14191,
+          "recall": 0.620703,
+          "seed": 3,
+          "tp": 7819
+        }
+      ],
+      "random_summary": {
+        "f1": 0.575705,
+        "f1_max": 0.589243,
+        "f1_min": 0.552114,
+        "f1_std": 0.01422,
+        "precision": 0.566946,
+        "recall": 0.586628
+      },
+      "validation": {
+        "f1": 0.794468,
+        "fn": 1297,
+        "fp": 204,
+        "merge_attempts": 496,
+        "merges": 396,
+        "precision": 0.9343,
+        "predicted_clusters": 101,
+        "predicted_pairs": 3105,
+        "recall": 0.691043,
+        "threshold": 0.35,
+        "tp": 2901
+      }
+    }
+  },
+  "protocol_version": 1,
+  "random_seeds": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "records": 2260,
+  "ris_calibration_candidates": [
+    {
+      "dimension": 128,
+      "merge_weight_strategy": "max",
+      "validation": {
+        "f1": 0.576427,
+        "fn": 2254,
+        "fp": 603,
+        "merge_attempts": 496,
+        "merges": 395,
+        "precision": 0.763251,
+        "predicted_clusters": 102,
+        "predicted_pairs": 2547,
+        "recall": 0.463078,
+        "threshold": 0.3,
+        "tp": 1944
+      }
+    },
+    {
+      "dimension": 128,
+      "merge_weight_strategy": "sum",
+      "validation": {
+        "f1": 0.750816,
+        "fn": 1554,
+        "fp": 201,
+        "merge_attempts": 496,
+        "merges": 382,
+        "precision": 0.92935,
+        "predicted_clusters": 115,
+        "predicted_pairs": 2845,
+        "recall": 0.629824,
+        "threshold": 0.4,
+        "tp": 2644
+      }
+    },
+    {
+      "dimension": 256,
+      "merge_weight_strategy": "max",
+      "validation": {
+        "f1": 0.610941,
+        "fn": 2199,
+        "fp": 347,
+        "merge_attempts": 496,
+        "merges": 387,
+        "precision": 0.852089,
+        "predicted_clusters": 110,
+        "predicted_pairs": 2346,
+        "recall": 0.476179,
+        "threshold": 0.3,
+        "tp": 1999
+      }
+    },
+    {
+      "dimension": 256,
+      "merge_weight_strategy": "sum",
+      "validation": {
+        "f1": 0.794468,
+        "fn": 1297,
+        "fp": 204,
+        "merge_attempts": 496,
+        "merges": 396,
+        "precision": 0.9343,
+        "predicted_clusters": 101,
+        "predicted_pairs": 3105,
+        "recall": 0.691043,
+        "threshold": 0.35,
+        "tp": 2901
+      }
+    },
+    {
+      "dimension": 512,
+      "merge_weight_strategy": "max",
+      "validation": {
+        "f1": 0.647231,
+        "fn": 2100,
+        "fp": 187,
+        "merge_attempts": 496,
+        "merges": 378,
+        "precision": 0.918162,
+        "predicted_clusters": 119,
+        "predicted_pairs": 2285,
+        "recall": 0.499762,
+        "threshold": 0.35,
+        "tp": 2098
+      }
+    },
+    {
+      "dimension": 512,
+      "merge_weight_strategy": "sum",
+      "validation": {
+        "f1": 0.793234,
+        "fn": 1267,
+        "fp": 261,
+        "merge_attempts": 496,
+        "merges": 407,
+        "precision": 0.918233,
+        "predicted_clusters": 90,
+        "predicted_pairs": 3192,
+        "recall": 0.69819,
+        "threshold": 0.3,
+        "tp": 2931
+      }
+    },
+    {
+      "dimension": 1024,
+      "merge_weight_strategy": "max",
+      "validation": {
+        "f1": 0.634407,
+        "fn": 2061,
+        "fp": 402,
+        "merge_attempts": 496,
+        "merges": 391,
+        "precision": 0.84167,
+        "predicted_clusters": 106,
+        "predicted_pairs": 2539,
+        "recall": 0.509052,
+        "threshold": 0.3,
+        "tp": 2137
+      }
+    },
+    {
+      "dimension": 1024,
+      "merge_weight_strategy": "sum",
+      "validation": {
+        "f1": 0.794142,
+        "fn": 1297,
+        "fp": 207,
+        "merge_attempts": 496,
+        "merges": 397,
+        "precision": 0.933398,
+        "predicted_clusters": 100,
+        "predicted_pairs": 3108,
+        "recall": 0.691043,
+        "threshold": 0.35,
+        "tp": 2901
+      }
+    }
+  ],
+  "ris_dimensions": [
+    128,
+    256,
+    512,
+    1024
+  ],
+  "ris_threshold_grid": [
+    0.3,
+    0.35,
+    0.4,
+    0.45,
+    0.5,
+    0.55,
+    0.6,
+    0.65,
+    0.7
+  ],
+  "ris_weight_strategies": [
+    "max",
+    "sum"
+  ],
+  "selected_ris": {
+    "dimension": 256,
+    "merge_weight_strategy": "sum",
+    "validation": {
+      "f1": 0.794468,
+      "fn": 1297,
+      "fp": 204,
+      "merge_attempts": 496,
+      "merges": 396,
+      "precision": 0.9343,
+      "predicted_clusters": 101,
+      "predicted_pairs": 3105,
+      "recall": 0.691043,
+      "threshold": 0.35,
+      "tp": 2901
+    }
+  },
+  "test_clusters": 260,
+  "test_records": 1763
+}

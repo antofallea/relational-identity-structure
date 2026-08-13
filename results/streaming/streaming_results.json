@@ -1,0 +1,308 @@
+{
+  "calibration_clusters": 70,
+  "calibration_records": 497,
+  "dataset": "Leipzig Affiliations",
+  "elapsed_seconds": 1308.269962,
+  "gold_clusters": 330,
+  "input_sha256": "5939821aff9c7949b8b2d49676af216287057db057dec8e308ff21f87c6e8231",
+  "methods": {
+    "Greedy Jaccard profile": {
+      "lexical": {
+        "f1": 0.262847,
+        "fn": 9285,
+        "fp": 9292,
+        "merge_attempts": 1762,
+        "merges": 1569,
+        "precision": 0.262774,
+        "predicted_clusters": 194,
+        "predicted_pairs": 12604,
+        "recall": 0.26292,
+        "tp": 3312
+      },
+      "random_orders": [
+        {
+          "f1": 0.260334,
+          "fn": 9552,
+          "fp": 7751,
+          "merge_attempts": 1762,
+          "merges": 1555,
+          "precision": 0.282049,
+          "predicted_clusters": 208,
+          "predicted_pairs": 10796,
+          "recall": 0.241724,
+          "seed": 0,
+          "tp": 3045
+        },
+        {
+          "f1": 0.2512,
+          "fn": 9745,
+          "fp": 7258,
+          "merge_attempts": 1762,
+          "merges": 1546,
+          "precision": 0.282097,
+          "predicted_clusters": 217,
+          "predicted_pairs": 10110,
+          "recall": 0.226403,
+          "seed": 1,
+          "tp": 2852
+        },
+        {
+          "f1": 0.238483,
+          "fn": 9874,
+          "fp": 7516,
+          "merge_attempts": 1762,
+          "merges": 1546,
+          "precision": 0.265944,
+          "predicted_clusters": 217,
+          "predicted_pairs": 10239,
+          "recall": 0.216163,
+          "seed": 2,
+          "tp": 2723
+        },
+        {
+          "f1": 0.249659,
+          "fn": 9758,
+          "fp": 7307,
+          "merge_attempts": 1762,
+          "merges": 1548,
+          "precision": 0.279815,
+          "predicted_clusters": 215,
+          "predicted_pairs": 10146,
+          "recall": 0.225371,
+          "seed": 3,
+          "tp": 2839
+        }
+      ],
+      "random_summary": {
+        "f1": 0.249919,
+        "f1_max": 0.260334,
+        "f1_min": 0.238483,
+        "f1_std": 0.007762,
+        "precision": 0.277476,
+        "recall": 0.227415
+      },
+      "validation": {
+        "f1": 0.545753,
+        "fn": 2203,
+        "fp": 1118,
+        "merge_attempts": 496,
+        "merges": 431,
+        "precision": 0.640861,
+        "predicted_clusters": 66,
+        "predicted_pairs": 3113,
+        "recall": 0.475226,
+        "threshold": 0.15,
+        "tp": 1995
+      }
+    },
+    "Jaccard connected components": {
+      "lexical": {
+        "f1": 0.067822,
+        "fn": 4846,
+        "fp": 208222,
+        "merge_attempts": 1762,
+        "merges": 5597,
+        "precision": 0.035889,
+        "predicted_clusters": 537,
+        "predicted_pairs": 215973,
+        "recall": 0.615305,
+        "tp": 7751
+      },
+      "random_orders": [
+        {
+          "f1": 0.067822,
+          "fn": 4846,
+          "fp": 208222,
+          "merge_attempts": 1762,
+          "merges": 5597,
+          "precision": 0.035889,
+          "predicted_clusters": 537,
+          "predicted_pairs": 215973,
+          "recall": 0.615305,
+          "seed": 0,
+          "tp": 7751
+        },
+        {
+          "f1": 0.067822,
+          "fn": 4846,
+          "fp": 208222,
+          "merge_attempts": 1762,
+          "merges": 5597,
+          "precision": 0.035889,
+          "predicted_clusters": 537,
+          "predicted_pairs": 215973,
+          "recall": 0.615305,
+          "seed": 1,
+          "tp": 7751
+        },
+        {
+          "f1": 0.067822,
+          "fn": 4846,
+          "fp": 208222,
+          "merge_attempts": 1762,
+          "merges": 5597,
+          "precision": 0.035889,
+          "predicted_clusters": 537,
+          "predicted_pairs": 215973,
+          "recall": 0.615305,
+          "seed": 2,
+          "tp": 7751
+        },
+        {
+          "f1": 0.067822,
+          "fn": 4846,
+          "fp": 208222,
+          "merge_attempts": 1762,
+          "merges": 5597,
+          "precision": 0.035889,
+          "predicted_clusters": 537,
+          "predicted_pairs": 215973,
+          "recall": 0.615305,
+          "seed": 3,
+          "tp": 7751
+        }
+      ],
+      "random_summary": {
+        "f1": 0.067822,
+        "f1_max": 0.067822,
+        "f1_min": 0.067822,
+        "f1_std": 0.0,
+        "precision": 0.035889,
+        "recall": 0.615305
+      },
+      "validation": {
+        "f1": 0.745649,
+        "fn": 1542,
+        "fp": 270,
+        "merge_attempts": 496,
+        "merges": 1192,
+        "precision": 0.907724,
+        "predicted_clusters": 177,
+        "predicted_pairs": 2926,
+        "recall": 0.632682,
+        "threshold": 0.55,
+        "tp": 2656
+      }
+    },
+    "RIS online merge": {
+      "lexical": {
+        "f1": 0.242072,
+        "fn": 9456,
+        "fp": 10213,
+        "merge_attempts": 1762,
+        "merges": 1482,
+        "precision": 0.23521,
+        "predicted_clusters": 281,
+        "predicted_pairs": 13354,
+        "recall": 0.249345,
+        "tp": 3141
+      },
+      "random_orders": [
+        {
+          "f1": 0.253915,
+          "fn": 9816,
+          "fp": 6527,
+          "merge_attempts": 1762,
+          "merges": 1449,
+          "precision": 0.298775,
+          "predicted_clusters": 314,
+          "predicted_pairs": 9308,
+          "recall": 0.220767,
+          "seed": 0,
+          "tp": 2781
+        },
+        {
+          "f1": 0.224801,
+          "fn": 9943,
+          "fp": 8361,
+          "merge_attempts": 1762,
+          "merges": 1464,
+          "precision": 0.240944,
+          "predicted_clusters": 299,
+          "predicted_pairs": 11015,
+          "recall": 0.210685,
+          "seed": 1,
+          "tp": 2654
+        },
+        {
+          "f1": 0.231196,
+          "fn": 10035,
+          "fp": 7004,
+          "merge_attempts": 1762,
+          "merges": 1450,
+          "precision": 0.267824,
+          "predicted_clusters": 313,
+          "predicted_pairs": 9566,
+          "recall": 0.203382,
+          "seed": 2,
+          "tp": 2562
+        },
+        {
+          "f1": 0.23,
+          "fn": 9975,
+          "fp": 7581,
+          "merge_attempts": 1762,
+          "merges": 1456,
+          "precision": 0.256983,
+          "predicted_clusters": 307,
+          "predicted_pairs": 10203,
+          "recall": 0.208145,
+          "seed": 3,
+          "tp": 2622
+        }
+      ],
+      "random_summary": {
+        "f1": 0.234978,
+        "f1_max": 0.253915,
+        "f1_min": 0.224801,
+        "f1_std": 0.011194,
+        "precision": 0.266132,
+        "recall": 0.210745
+      },
+      "validation": {
+        "f1": 0.508987,
+        "fn": 2513,
+        "fp": 738,
+        "merge_attempts": 496,
+        "merges": 389,
+        "precision": 0.695419,
+        "predicted_clusters": 108,
+        "predicted_pairs": 2423,
+        "recall": 0.401382,
+        "threshold": 0.45,
+        "tp": 1685
+      }
+    }
+  },
+  "protocol_version": 1,
+  "random_seeds": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "records": 2260,
+  "test_clusters": 260,
+  "test_records": 1763,
+  "threshold_grid": [
+    0.05,
+    0.1,
+    0.15,
+    0.2,
+    0.25,
+    0.3,
+    0.35,
+    0.4,
+    0.45,
+    0.5,
+    0.55,
+    0.6,
+    0.65,
+    0.7,
+    0.75,
+    0.8,
+    0.85,
+    0.9,
+    0.95
+  ]
+}

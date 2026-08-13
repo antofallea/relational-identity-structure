@@ -1,7 +1,7 @@
 import numpy as np
 import json
 import hashlib
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, Iterable, List, Tuple, Optional
 import os
 
 try:
@@ -22,10 +22,22 @@ class RelationalIdentityStructure:
     """
 
     def __init__(self, embedding_dim: int = 64, merge_threshold: float = 0.99,
-                 max_elements: int = 100000, verbose: bool = True):
+                 max_elements: int = 100000, verbose: bool = True,
+                 auto_merge: bool = True, merge_weight_strategy: str = "max"):
+        """Create an RIS graph.
+
+        Set ``auto_merge=False`` when the graph is used only to compute
+        relational signatures (for example, to evaluate a labeled set of
+        candidate record pairs).  The default preserves the original online
+        merge behaviour.
+        """
         self.embedding_dim = embedding_dim
         self.merge_threshold = merge_threshold
         self.verbose = verbose
+        self.auto_merge = auto_merge
+        if merge_weight_strategy not in {"max", "sum"}:
+            raise ValueError("merge_weight_strategy must be 'max' or 'sum'")
+        self.merge_weight_strategy = merge_weight_strategy
 
         self.nodes: Dict[int, dict] = {}
         self.aliases: Dict[int, int] = {}
@@ -64,7 +76,11 @@ class RelationalIdentityStructure:
         noise_rng = np.random.RandomState(noise_seed)
         noise_vector = noise_rng.randn(self.embedding_dim)
 
-        return (base_vector * weight) + (noise_vector * 0.7)
+        # An edge weight must scale the complete relation encoding.  Scaling
+        # only the relation-type component would leave neighbour-specific
+        # evidence unweighted and make weighted signatures internally
+        # inconsistent.
+        return weight * (base_vector + (noise_vector * 0.7))
 
     def _compute_signature(self, node_id: int) -> np.ndarray:
         if node_id not in self.nodes:
@@ -124,9 +140,10 @@ class RelationalIdentityStructure:
         self._update_signature(source)
         self._update_signature(target)
 
-        self._check_merge(source, target)
-        self._check_merge_for_node(source)
-        self._check_merge_for_node(target)
+        if self.auto_merge:
+            self._check_merge(source, target)
+            self._check_merge_for_node(source)
+            self._check_merge_for_node(target)
 
     def _update_signature(self, node_id: int):
         if node_id in self.nodes:
@@ -212,7 +229,7 @@ class RelationalIdentityStructure:
                 self._check_merge_for_node(node_id)
                 break
 
-    def _merge_nodes(self, node_a: int, node_b: int):
+    def _merge_nodes(self, node_a: int, node_b: int, update_neighbor_signatures: bool = True):
         if self.verbose:
             print(f"  [⚡ MERGE] Nodes {node_a} and {node_b} merged (same type: {self.nodes[node_a]['data'].get('type')})")
 
@@ -222,15 +239,26 @@ class RelationalIdentityStructure:
         updated_neighbors = set()
 
         for neighbor_id, rel_info in relations_to_transfer:
-            if neighbor_id in self.nodes[node_a]['relations']:
-                if rel_info['weight'] > self.nodes[node_a]['relations'][neighbor_id]['weight']:
-                    self.nodes[node_a]['relations'][neighbor_id] = rel_info
+            existing = self.nodes[node_a]['relations'].get(neighbor_id)
+            if existing is not None:
+                if (self.merge_weight_strategy == "sum" and
+                        existing['type'] == rel_info['type']):
+                    merged_relation = {
+                        'type': existing['type'],
+                        'weight': existing['weight'] + rel_info['weight']
+                    }
+                elif rel_info['weight'] > existing['weight']:
+                    merged_relation = rel_info
+                else:
+                    merged_relation = existing
             else:
-                self.nodes[node_a]['relations'][neighbor_id] = rel_info
+                merged_relation = rel_info
+
+            self.nodes[node_a]['relations'][neighbor_id] = merged_relation
 
             if node_b in self.nodes[neighbor_id]['relations']:
                 del self.nodes[neighbor_id]['relations'][node_b]
-            self.nodes[neighbor_id]['relations'][node_a] = rel_info
+            self.nodes[neighbor_id]['relations'][node_a] = merged_relation
             updated_neighbors.add(neighbor_id)
 
         self.nodes[node_a]['relations'].pop(node_b, None)
@@ -239,8 +267,9 @@ class RelationalIdentityStructure:
         self.aliases[node_b] = node_a
 
         self._update_signature(node_a)
-        for nbr in updated_neighbors:
-            self._update_signature(nbr)
+        if update_neighbor_signatures:
+            for nbr in updated_neighbors:
+                self._update_signature(nbr)
 
         if self.use_hnsw and node_b in self._active_in_index:
             try:
@@ -295,6 +324,94 @@ class RelationalIdentityStructure:
             similarities.sort(key=lambda x: x[1], reverse=True)
             return similarities[:top_k]
 
+    def similarity(self, node_a: int, node_b: int) -> float:
+        """Return the cosine similarity between two active RIS nodes.
+
+        This read-only helper is useful when a caller owns the decision to
+        merge, or when a fixed set of candidate pairs must be evaluated.
+        Empty signatures have no relational evidence and therefore score 0.
+        """
+        node_a = self._resolve_alias(node_a)
+        node_b = self._resolve_alias(node_b)
+        if node_a not in self.nodes or node_b not in self.nodes:
+            return 0.0
+
+        sig_a = self.nodes[node_a]['signature']
+        sig_b = self.nodes[node_b]['signature']
+        norm_a = np.linalg.norm(sig_a)
+        norm_b = np.linalg.norm(sig_b)
+        if norm_a == 0 or norm_b == 0:
+            return 0.0
+        return float(np.dot(sig_a, sig_b) / (norm_a * norm_b))
+
+    def best_match(
+        self,
+        node_id: int,
+        same_type: bool = True,
+        candidate_ids: Optional[Iterable[int]] = None,
+    ) -> Optional[Tuple[int, float]]:
+        """Return the most similar active node, optionally restricted by type.
+
+        The lookup is an exact scan.  It intentionally does not use the HNSW
+        index because filtering a short approximate-neighbour list can omit the
+        best compatible node.  This is useful for callers that make an
+        explicit, auditable online merge decision.
+        """
+        node_id = self._resolve_alias(node_id)
+        if node_id not in self.nodes:
+            return None
+
+        target_signature = self.nodes[node_id]['signature']
+        if np.linalg.norm(target_signature) == 0:
+            return None
+        target_type = self.nodes[node_id]['data'].get('type')
+
+        compatible_ids = []
+        candidate_vectors = []
+        candidate_iterable = self.nodes.keys() if candidate_ids is None else candidate_ids
+        for other_id in candidate_iterable:
+            other_node = self.nodes.get(other_id)
+            if other_node is None:
+                continue
+            if other_id == node_id:
+                continue
+            if same_type and other_node['data'].get('type') != target_type:
+                continue
+            other_signature = other_node['signature']
+            if not np.any(other_signature):
+                continue
+            compatible_ids.append(other_id)
+            candidate_vectors.append(other_signature)
+
+        if not compatible_ids:
+            return None
+        scores = np.vstack(candidate_vectors).dot(target_signature)
+        best_index = int(np.argmax(scores))
+        return compatible_ids[best_index], float(scores[best_index])
+
+    def merge_if_similar(
+        self,
+        primary: int,
+        secondary: int,
+        update_neighbor_signatures: bool = True,
+    ) -> bool:
+        """Merge two compatible nodes when their score exceeds the threshold.
+
+        Unlike the automatic path in :meth:`connect`, the caller controls when
+        candidates are examined and which node survives.  The same type,
+        relation-count, threshold, and alias safeguards remain in force. Set
+        ``update_neighbor_signatures=False`` only when those signatures will
+        not be queried before a later refresh.
+        """
+        primary = self._resolve_alias(primary)
+        secondary = self._resolve_alias(secondary)
+        if primary == secondary or not self._can_merge(primary, secondary):
+            return False
+        if self.similarity(primary, secondary) > self.merge_threshold:
+            self._merge_nodes(primary, secondary, update_neighbor_signatures)
+            return True
+        return False
+
     def get_node_data(self, node_id: int) -> Optional[dict]:
         node_id = self._resolve_alias(node_id)
         if node_id in self.nodes:
@@ -316,6 +433,8 @@ class RelationalIdentityStructure:
         data = {
             "embedding_dim": self.embedding_dim,
             "merge_threshold": self.merge_threshold,
+            "auto_merge": self.auto_merge,
+            "merge_weight_strategy": self.merge_weight_strategy,
             "next_id": self._next_id,
             "aliases": {str(k): v for k, v in self.aliases.items()},
             "nodes": serializable_nodes
@@ -335,6 +454,8 @@ class RelationalIdentityStructure:
 
         self.embedding_dim = data["embedding_dim"]
         self.merge_threshold = data["merge_threshold"]
+        self.auto_merge = data.get("auto_merge", self.auto_merge)
+        self.merge_weight_strategy = data.get("merge_weight_strategy", self.merge_weight_strategy)
         self._next_id = data["next_id"]
         self.aliases = {int(k): v for k, v in data["aliases"].items()}
 

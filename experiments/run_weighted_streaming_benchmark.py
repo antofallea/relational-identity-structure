@@ -1,0 +1,315 @@
+"""Select and evaluate a weighted relational RIS stream without test tuning.
+
+This follow-up uses corpus-level inverse-document-frequency (IDF) edge weights
+and selects RIS signature dimension plus threshold only on the cluster-level
+calibration partition.  It compares the selected RIS policy with both the
+previous unweighted greedy Jaccard baseline and an exact weighted-cosine greedy
+baseline.  The latter is essential: it distinguishes a relational-signature
+gain from a gain caused solely by token weighting.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import random
+import statistics
+from collections import Counter
+from pathlib import Path
+from time import perf_counter
+from typing import Callable, Dict, Sequence, Set
+
+from run_streaming_benchmark import (
+    ROOT,
+    THRESHOLDS,
+    download,
+    jaccard,
+    load_data,
+    pairwise_metrics,
+    run_jaccard_components,
+    run_greedy_jaccard,
+    run_ris,
+    sha256,
+    split_clusters,
+)
+
+
+RIS_DIMENSIONS = (128, 256, 512, 1024)
+RIS_THRESHOLDS = tuple(round(value / 100, 2) for value in range(30, 71, 5))
+RIS_WEIGHT_STRATEGIES = ("max", "sum")
+
+
+def idf_weights(records: Dict[str, Set[str]]) -> Dict[str, float]:
+    document_frequency = Counter(token for record_tokens in records.values() for token in record_tokens)
+    total_documents = len(records)
+    return {
+        token: math.log((total_documents + 1) / (frequency + 1)) + 1.0
+        for token, frequency in document_frequency.items()
+    }
+
+
+def weighted_cosine(left: Set[str], right: Set[str], weights: Dict[str, float]) -> float:
+    numerator = sum(weights[token] ** 2 for token in left & right)
+    left_norm = math.sqrt(sum(weights[token] ** 2 for token in left))
+    right_norm = math.sqrt(sum(weights[token] ** 2 for token in right))
+    return numerator / (left_norm * right_norm) if left_norm and right_norm else 0.0
+
+
+def run_greedy_weighted_cosine(
+    records: Dict[str, Set[str]],
+    gold: Dict[str, str],
+    order: Sequence[str],
+    threshold: float,
+    weights: Dict[str, float],
+) -> Dict[str, float | int]:
+    profiles: Dict[str, Set[str]] = {}
+    predicted: Dict[str, str] = {}
+    merges = 0
+    for record_id in order:
+        best_cluster = None
+        best_score = -1.0
+        for cluster_id, profile in profiles.items():
+            score = weighted_cosine(records[record_id], profile, weights)
+            if score > best_score:
+                best_cluster, best_score = cluster_id, score
+        if best_cluster is not None and best_score > threshold:
+            profiles[best_cluster].update(records[record_id])
+            predicted[record_id] = best_cluster
+            merges += 1
+        else:
+            profiles[record_id] = set(records[record_id])
+            predicted[record_id] = record_id
+    result = pairwise_metrics(predicted, gold)
+    result.update({"merges": merges, "merge_attempts": max(0, len(order) - 1)})
+    return result
+
+
+def rounded(metrics: Dict[str, float | int]) -> Dict[str, float | int]:
+    return {key: round(value, 6) if isinstance(value, float) else value for key, value in metrics.items()}
+
+
+def summarize(metrics: Sequence[Dict[str, float | int]]) -> Dict[str, float]:
+    return {
+        "precision": round(statistics.mean(float(row["precision"]) for row in metrics), 6),
+        "recall": round(statistics.mean(float(row["recall"]) for row in metrics), 6),
+        "f1": round(statistics.mean(float(row["f1"]) for row in metrics), 6),
+        "f1_std": round(statistics.pstdev(float(row["f1"]) for row in metrics), 6),
+        "f1_min": round(min(float(row["f1"]) for row in metrics), 6),
+        "f1_max": round(max(float(row["f1"]) for row in metrics), 6),
+    }
+
+
+def select_threshold(
+    method: Callable[[float], Dict[str, float | int]], thresholds: Sequence[float]
+) -> Dict[str, float | int]:
+    candidates = []
+    for threshold in thresholds:
+        result = method(threshold)
+        result["threshold"] = threshold
+        candidates.append(result)
+    return max(candidates, key=lambda row: (row["f1"], row["precision"], row["threshold"]))
+
+
+def evaluate_orders(
+    method: Callable[[Sequence[str], float], Dict[str, float | int]],
+    test_ids: Sequence[str],
+    threshold: float,
+    seeds: Sequence[int],
+) -> Dict:
+    lexical = method(test_ids, threshold)
+    shuffled = []
+    for seed in seeds:
+        order = list(test_ids)
+        random.Random(seed).shuffle(order)
+        result = method(order, threshold)
+        result["seed"] = seed
+        shuffled.append(result)
+    return {
+        "lexical": rounded(lexical),
+        "random_orders": [rounded(row) for row in shuffled],
+        "random_summary": summarize(shuffled),
+    }
+
+
+def markdown_report(result: Dict) -> str:
+    lines = [
+        "# Weighted relational streaming benchmark: Affiliations",
+        "",
+        "Generated by `experiments/run_weighted_streaming_benchmark.py`; do not edit numerical values by hand.",
+        "",
+        "## Protocol",
+        "",
+        "- The raw, unlabeled corpus is used once to compute IDF weights for token relations; no gold labels enter these weights.",
+        "- RIS candidate dimensions are 128, 256, 512, and 1024; relation aggregation is max or sum; tau candidates are 0.30–0.70 in 0.05 increments. All are selected by calibration F1 only.",
+        "- Test records are processed in lexical order and four shuffled orders (seeds 0–3). The selected RIS configuration is frozen before all test runs.",
+        "- The weighted-cosine baseline uses the same IDF values and the same greedy profile policy, making it a direct test of the value added by the RIS signature.",
+        "",
+        "## Selected RIS configuration",
+        "",
+        f"- Dimension: {result['selected_ris']['dimension']}",
+        f"- Relation aggregation: {result['selected_ris']['merge_weight_strategy']}",
+        f"- tau: {result['selected_ris']['validation']['threshold']:.2f}",
+        f"- Calibration F1: {result['selected_ris']['validation']['f1']:.3f}",
+        "",
+        "## Fixed-test results",
+        "",
+        "| Method | Lexical F1 | Random mean F1 +/- sd | Random range | Random P | Random R |",
+        "|---|---:|---:|---:|---:|---:|",
+    ]
+    for name, method in result["methods"].items():
+        summary = method["random_summary"]
+        lines.append(
+            f"| {name} | {method['lexical']['f1']:.3f} | {summary['f1']:.3f} +/- {summary['f1_std']:.3f} | "
+            f"{summary['f1_min']:.3f}–{summary['f1_max']:.3f} | {summary['precision']:.3f} | {summary['recall']:.3f} |"
+        )
+    lines += [
+        "",
+        "## Interpretation boundary",
+        "",
+        "IDF is computed from the full unlabeled batch before streaming begins, so this is an offline-vocabulary online-merge experiment, not a strictly future-blind feature stream. The exact weighted-cosine baseline is included to prevent attributing IDF gains to relational hashing alone.",
+        "",
+        f"Input SHA-256: `{result['input_sha256']}`. Calibration: {result['calibration_records']} records / {result['calibration_clusters']} clusters; test: {result['test_records']} records / {result['test_clusters']} clusters.",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--data-dir", type=Path, default=ROOT / "data" / "stream")
+    parser.add_argument("--output-dir", type=Path, default=ROOT / "results" / "streaming_weighted")
+    parser.add_argument("--download", action="store_true")
+    parser.add_argument("--seeds", type=int, nargs="*", default=[0, 1, 2, 3])
+    args = parser.parse_args()
+
+    if args.download:
+        download(args.data_dir)
+    records, labels, members = load_data(args.data_dir)
+    calibration_clusters, test_clusters = split_clusters(members)
+    calibration_ids = sorted(record_id for record_id, label in labels.items() if label in calibration_clusters)
+    test_ids = sorted(record_id for record_id, label in labels.items() if label in test_clusters)
+    calibration_records = {record_id: records[record_id] for record_id in calibration_ids}
+    calibration_labels = {record_id: labels[record_id] for record_id in calibration_ids}
+    test_records = {record_id: records[record_id] for record_id in test_ids}
+    test_labels = {record_id: labels[record_id] for record_id in test_ids}
+    weights = idf_weights(records)
+
+    start = perf_counter()
+    ris_candidates = []
+    for dimension in RIS_DIMENSIONS:
+        for merge_weight_strategy in RIS_WEIGHT_STRATEGIES:
+            validation = select_threshold(
+                lambda threshold, d=dimension, strategy=merge_weight_strategy: run_ris(
+                    calibration_records,
+                    calibration_labels,
+                    calibration_ids,
+                    threshold,
+                    embedding_dim=d,
+                    token_weights=weights,
+                    merge_weight_strategy=strategy,
+                ),
+                RIS_THRESHOLDS,
+            )
+            ris_candidates.append({
+                "dimension": dimension,
+                "merge_weight_strategy": merge_weight_strategy,
+                "validation": rounded(validation),
+            })
+    selected_ris = max(
+        ris_candidates,
+        key=lambda candidate: (
+            candidate["validation"]["f1"],
+            candidate["validation"]["precision"],
+            candidate["validation"]["threshold"],
+            candidate["dimension"],
+        ),
+    )
+    ris_threshold = float(selected_ris["validation"]["threshold"])
+    ris_dimension = int(selected_ris["dimension"])
+    ris_weight_strategy = str(selected_ris["merge_weight_strategy"])
+
+    jaccard_validation = select_threshold(
+        lambda threshold: run_greedy_jaccard(calibration_records, calibration_labels, calibration_ids, threshold),
+        THRESHOLDS,
+    )
+    weighted_validation = select_threshold(
+        lambda threshold: run_greedy_weighted_cosine(
+            calibration_records, calibration_labels, calibration_ids, threshold, weights
+        ),
+        THRESHOLDS,
+    )
+    components_validation = select_threshold(
+        lambda threshold: run_jaccard_components(calibration_records, calibration_labels, calibration_ids, threshold),
+        THRESHOLDS,
+    )
+
+    methods = {
+        "RIS weighted signature": {
+            "validation": selected_ris["validation"],
+            **evaluate_orders(
+                lambda order, threshold: run_ris(
+                    test_records, test_labels, order, threshold,
+                    embedding_dim=ris_dimension,
+                    token_weights=weights,
+                    merge_weight_strategy=ris_weight_strategy,
+                ),
+                test_ids, ris_threshold, args.seeds,
+            ),
+        },
+        "Greedy Jaccard profile": {
+            "validation": rounded(jaccard_validation),
+            **evaluate_orders(
+                lambda order, threshold: run_greedy_jaccard(test_records, test_labels, order, threshold),
+                test_ids, float(jaccard_validation["threshold"]), args.seeds,
+            ),
+        },
+        "Greedy weighted-cosine profile": {
+            "validation": rounded(weighted_validation),
+            **evaluate_orders(
+                lambda order, threshold: run_greedy_weighted_cosine(
+                    test_records, test_labels, order, threshold, weights
+                ),
+                test_ids, float(weighted_validation["threshold"]), args.seeds,
+            ),
+        },
+        "Jaccard connected components": {
+            "validation": rounded(components_validation),
+            **evaluate_orders(
+                lambda order, threshold: run_jaccard_components(test_records, test_labels, order, threshold),
+                test_ids, float(components_validation["threshold"]), args.seeds,
+            ),
+        },
+    }
+    archive = args.data_dir / "affiliations.zip"
+    result = {
+        "protocol_version": 1,
+        "dataset": "Leipzig Affiliations",
+        "input_sha256": sha256(archive),
+        "idf_scope": "complete raw unlabeled corpus before split and stream",
+        "records": len(records),
+        "gold_clusters": len(members),
+        "calibration_records": len(calibration_ids),
+        "calibration_clusters": len(calibration_clusters),
+        "test_records": len(test_ids),
+        "test_clusters": len(test_clusters),
+        "ris_dimensions": list(RIS_DIMENSIONS),
+        "ris_weight_strategies": list(RIS_WEIGHT_STRATEGIES),
+        "ris_threshold_grid": list(RIS_THRESHOLDS),
+        "baseline_threshold_grid": list(THRESHOLDS),
+        "random_seeds": args.seeds,
+        "selected_ris": selected_ris,
+        "ris_calibration_candidates": ris_candidates,
+        "elapsed_seconds": round(perf_counter() - start, 6),
+        "methods": methods,
+    }
+    args.output_dir.mkdir(parents=True, exist_ok=True)
+    (args.output_dir / "weighted_streaming_results.json").write_text(json.dumps(result, indent=2, sort_keys=True), encoding="utf-8")
+    (args.output_dir / "weighted_streaming_results.md").write_text(markdown_report(result), encoding="utf-8")
+    print(markdown_report(result))
+    print(f"Wrote {args.output_dir / 'weighted_streaming_results.json'}")
+    print(f"Wrote {args.output_dir / 'weighted_streaming_results.md'}")
+
+
+if __name__ == "__main__":
+    main()

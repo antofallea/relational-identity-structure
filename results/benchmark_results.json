@@ -1,0 +1,292 @@
+{
+  "datasets": [
+    {
+      "graph_build_seconds": 20.019873,
+      "input_sha256": {
+        "abt-buy-records.zip": "23a010f59882e37fea90422de8d09ec765dff178912f416b2b0c6d64f7f9a26e",
+        "abt-buy-test.csv": "2c7746099fb6373816f6f1efdaea56207f500fc7e530e9170165334f769497c4",
+        "abt-buy-val.csv": "44daa254be1cea8a9e1a580409c31906966ebcef73b8e38b138b1928fc65de94"
+      },
+      "methods": {
+        "RIS signature": {
+          "test": {
+            "f1": 0.430108,
+            "fn": 49,
+            "fp": 110,
+            "precision": 0.352941,
+            "predicted_positive": 170,
+            "recall": 0.550459,
+            "threshold": 0.28,
+            "tp": 60
+          },
+          "validation": {
+            "f1": 0.436945,
+            "fn": 97,
+            "fp": 220,
+            "precision": 0.358601,
+            "predicted_positive": 343,
+            "recall": 0.559091,
+            "threshold": 0.28,
+            "tp": 123
+          }
+        },
+        "Token Jaccard baseline": {
+          "test": {
+            "f1": 0.368421,
+            "fn": 60,
+            "fp": 108,
+            "precision": 0.312102,
+            "predicted_positive": 157,
+            "recall": 0.449541,
+            "threshold": 0.14,
+            "tp": 49
+          },
+          "validation": {
+            "f1": 0.430335,
+            "fn": 98,
+            "fp": 225,
+            "precision": 0.351585,
+            "predicted_positive": 347,
+            "recall": 0.554545,
+            "threshold": 0.14,
+            "tp": 122
+          }
+        }
+      },
+      "name": "abt-buy",
+      "records": 2173,
+      "relations": 64709,
+      "test_pairs": 710,
+      "test_positive": 109,
+      "validation_pairs": 1439,
+      "validation_positive": 220
+    },
+    {
+      "graph_build_seconds": 53.900605,
+      "input_sha256": {
+        "amazon-google-records.zip": "d2851dd96a2a58c77323b41ce6340f7a7d39c3569e7a3756bdd6785abc8fc24d",
+        "amazon-google-test.csv": "15a5a1d4506879b825b0dfe862b5ab580838612442227ee8825193f31b69dc8f",
+        "amazon-google-val.csv": "c6edc8110ecc30c3bdfdc85cb4238deb765d4c3fb046b5b7148f3d6fa7d8f975"
+      },
+      "methods": {
+        "RIS signature": {
+          "test": {
+            "f1": 0.539419,
+            "fn": 63,
+            "fp": 48,
+            "precision": 0.575221,
+            "predicted_positive": 113,
+            "recall": 0.507812,
+            "threshold": 0.33,
+            "tp": 65
+          },
+          "validation": {
+            "f1": 0.460674,
+            "fn": 138,
+            "fp": 150,
+            "precision": 0.450549,
+            "predicted_positive": 273,
+            "recall": 0.471264,
+            "threshold": 0.33,
+            "tp": 123
+          }
+        },
+        "Token Jaccard baseline": {
+          "test": {
+            "f1": 0.55873,
+            "fn": 40,
+            "fp": 99,
+            "precision": 0.470588,
+            "predicted_positive": 187,
+            "recall": 0.6875,
+            "threshold": 0.1,
+            "tp": 88
+          },
+          "validation": {
+            "f1": 0.470756,
+            "fn": 96,
+            "fp": 275,
+            "precision": 0.375,
+            "predicted_positive": 440,
+            "recall": 0.632184,
+            "threshold": 0.1,
+            "tp": 165
+          }
+        }
+      },
+      "name": "amazon-google",
+      "records": 2404,
+      "relations": 171331,
+      "test_pairs": 836,
+      "test_positive": 128,
+      "validation_pairs": 1696,
+      "validation_positive": 261
+    },
+    {
+      "graph_build_seconds": 28.342688,
+      "input_sha256": {
+        "dblp-acm-records.zip": "19baf80cd64d5d0b0b4d572bc22a0acb7959a9eea8a4e01f0f2ff82129b0aa73",
+        "dblp-acm-test.csv": "3fa9c72873ae31f576ce8c307e56ceee0986a7ceeeaef0af861719811c341cac",
+        "dblp-acm-val.csv": "5060c36eafe5d011f2350813424da4ca50a36af8273fbde7093a3a6a8f53b3c4"
+      },
+      "methods": {
+        "RIS signature": {
+          "test": {
+            "f1": 0.99095,
+            "fn": 1,
+            "fp": 3,
+            "precision": 0.986486,
+            "predicted_positive": 222,
+            "recall": 0.995455,
+            "threshold": 0.55,
+            "tp": 219
+          },
+          "validation": {
+            "f1": 0.985539,
+            "fn": 4,
+            "fp": 9,
+            "precision": 0.980088,
+            "predicted_positive": 452,
+            "recall": 0.991051,
+            "threshold": 0.55,
+            "tp": 443
+          }
+        },
+        "Token Jaccard baseline": {
+          "test": {
+            "f1": 0.993135,
+            "fn": 3,
+            "fp": 0,
+            "precision": 1.0,
+            "predicted_positive": 217,
+            "recall": 0.986364,
+            "threshold": 0.41,
+            "tp": 217
+          },
+          "validation": {
+            "f1": 0.992144,
+            "fn": 5,
+            "fp": 2,
+            "precision": 0.995495,
+            "predicted_positive": 444,
+            "recall": 0.988814,
+            "threshold": 0.41,
+            "tp": 442
+          }
+        }
+      },
+      "name": "dblp-acm",
+      "records": 4910,
+      "relations": 93655,
+      "test_pairs": 4624,
+      "test_positive": 220,
+      "validation_pairs": 9387,
+      "validation_positive": 447
+    }
+  ],
+  "protocol_version": 1,
+  "signature_dimension": 64,
+  "thresholds": [
+    0.0,
+    0.01,
+    0.02,
+    0.03,
+    0.04,
+    0.05,
+    0.06,
+    0.07,
+    0.08,
+    0.09,
+    0.1,
+    0.11,
+    0.12,
+    0.13,
+    0.14,
+    0.15,
+    0.16,
+    0.17,
+    0.18,
+    0.19,
+    0.2,
+    0.21,
+    0.22,
+    0.23,
+    0.24,
+    0.25,
+    0.26,
+    0.27,
+    0.28,
+    0.29,
+    0.3,
+    0.31,
+    0.32,
+    0.33,
+    0.34,
+    0.35,
+    0.36,
+    0.37,
+    0.38,
+    0.39,
+    0.4,
+    0.41,
+    0.42,
+    0.43,
+    0.44,
+    0.45,
+    0.46,
+    0.47,
+    0.48,
+    0.49,
+    0.5,
+    0.51,
+    0.52,
+    0.53,
+    0.54,
+    0.55,
+    0.56,
+    0.57,
+    0.58,
+    0.59,
+    0.6,
+    0.61,
+    0.62,
+    0.63,
+    0.64,
+    0.65,
+    0.66,
+    0.67,
+    0.68,
+    0.69,
+    0.7,
+    0.71,
+    0.72,
+    0.73,
+    0.74,
+    0.75,
+    0.76,
+    0.77,
+    0.78,
+    0.79,
+    0.8,
+    0.81,
+    0.82,
+    0.83,
+    0.84,
+    0.85,
+    0.86,
+    0.87,
+    0.88,
+    0.89,
+    0.9,
+    0.91,
+    0.92,
+    0.93,
+    0.94,
+    0.95,
+    0.96,
+    0.97,
+    0.98,
+    0.99,
+    1.0
+  ]
+}
